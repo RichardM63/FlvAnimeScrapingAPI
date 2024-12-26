@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: API de Scraping para la obtención de los últimos episodios de animes estrenados con AnimeFLV.
+  description: Esta API se encarga de manejar los datos de los últimos capítulos de animes lanzados y ofrecer una variedad de alternativas para verlos usando AnimeFLV.
+  version: 1.0.0
+servers: 
+  - url: http://<IP-PUBLICA>/api/anime/
+tags:
+  - name: anime
+    description: Este endpoint maneja todos los procesos relacionados a la obtención de capítulos por medio de AnimeFLV.
+paths:
+  /latest/:
+    get:
+      tags:
+        - anime
+      summary: Extrae todos los últimos capítulos obtenidos de los animes.
+      responses:
+        200:
+          description: (OK) Los capítulos se han obtenido correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  episodes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FirstAnimeEpisodesGet'
+                  message:
+                    type: string
+                    description: Mensaje para comunicar que el proceso fue un exito.
+        404:
+          $ref: '#/components/responses/FIRST_NOT_FOUND'
+          
+  /episode/{title}:
+    get:
+      tags:
+        - anime
+      summary: Obtiene los detalles del capítulo seleccionado, principalmente las opciones de streaming y links de los videos.
+      parameters:
+        - name: title
+          in: path
+          description: Identificador del capítulo a obtener.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: (OK) Es posible acceder al capítulo con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecondAnimeEpisodesGet'
+      
+components:
+  responses:
+    FIRST_NOT_FOUND:
+      description: (NOT_FOUND) No se ha logrado acceder al catalogo de capitulos.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeNotFound'
+    SECOND_NOT_FOUND:
+      description: (NOT_FOUND) No se ha logrado acceder a los detalles del capitulo
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeNotFound'
+  
+  schemas:
+    FirstAnimeEpisodesGet:
+        type: object
+        properties:
+          title:
+            type: string
+            description: Título del anime.
+          thumbnail:
+            type: string
+            description: URL de la imagen predefinida de la temporada del anime.
+          urlPaginaCapitulo:
+            type: string
+            description: URL de la dirección del capítulo para la obtención de los distintos servicios de streaming.
+    SecondAnimeEpisodesGet:
+      type: object
+      properties:
+        episode:
+          type: object
+          properties:
+            title:
+              type: string
+              description: Título del anime.
+            thumbnail:
+              type: string
+              description: URL de la imagen predefinida de la temporada del anime.
+            urlPaginaCapitulo:
+              type: string
+              description: URL de la dirección del capítulo para la obtención de los distintos servicios de streaming.
+            options:
+              type: object
+              additionalProperties:
+                type: string
+                example: "Url de cada servidor de streaming"
+              description: Mapa que almacena como clave el nombre del servidor y como valor el link del capítulo.
+        message:
+          type: string
+          description: Mensaje para comunicar que el proceso fue un exito.
+          
+    AnimeNotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Mensaje para comunicar que existe un error.
+        error:
+          type: string
+          description: Detalles sobre la excepcion.
