@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface IAnimeFlvRepository {
     List<AnimeEpisode> getLatestEpisodes();
-    AnimeEpisode getEpisodeData(String title);
+    AnimeEpisode getEpisodeData(AnimeEpisode animeEpisode);
 }

@@ -4,12 +4,30 @@ info:
   description: Esta API se encarga de manejar los datos de los últimos capítulos de animes lanzados y ofrecer una variedad de alternativas para verlos usando AnimeFLV.
   version: 1.0.0
 servers: 
-  - url: http://<IP-PUBLICA>/api/anime/
+  - url: http://<DOMINIO>/api/anime
 tags:
   - name: anime
     description: Este endpoint maneja todos los procesos relacionados a la obtención de capítulos por medio de AnimeFLV.
 paths:
-  /latest/:
+  /description:
+    get:
+      tags:
+        - anime
+      summary: Extrae los detalles de un Anime seleccionado, principalmente la lista de capitulos, detalles y valorizacion.
+      parameters:
+        - $ref: '#/components/parameters/AnimeEpisodeWithDescription'
+      responses:
+        200:
+          description: (OK) Es posible acceder a los detalles del anime con exito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAnimeDescription'
+        400:
+          $ref: '#/components/responses/GetAnimeDescription_BAD_REQUEST'
+        404:
+          $ref: '#/components/responses/GetAnimeDescription_NOT_FOUND'
+  /latest:
     get:
       tags:
         - anime
@@ -25,62 +43,136 @@ paths:
                   episodes:
                     type: array
                     items:
-                      $ref: '#/components/schemas/FirstAnimeEpisodesGet'
+                      $ref: '#/components/schemas/GetLatestEpisodes'
                   message:
                     type: string
                     description: Mensaje para comunicar que el proceso fue un exito.
+                    example: "Es posible acceder a los detalles del anime con exito."
+        400:
+          $ref: '#/components/responses/GetLatestEpisodes_BAD_REQUEST'
         404:
-          $ref: '#/components/responses/FIRST_NOT_FOUND'
+          $ref: '#/components/responses/GetLatestEpisodes_NOT_FOUND'
           
-  /episode/{title}:
+  /episode:
     get:
       tags:
         - anime
       summary: Obtiene los detalles del capítulo seleccionado, principalmente las opciones de streaming y links de los videos.
       parameters:
-        - name: title
-          in: path
-          description: Identificador del capítulo a obtener.
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/AnimeEpisodeWithTitleAndUrl'
       responses:
         200:
           description: (OK) Es posible acceder al capítulo con éxito.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SecondAnimeEpisodesGet'
+                $ref: '#/components/schemas/GetEpisodeData'
+        400:
+          $ref: '#/components/responses/GetEpisodeData_BAD_REQUEST'
+        404:
+          $ref: '#/components/responses/GetEpisodeData_NOT_FOUND'
       
 components:
   responses:
-    FIRST_NOT_FOUND:
-      description: (NOT_FOUND) No se ha logrado acceder al catalogo de capitulos.
+    GetAnimeDescription_BAD_REQUEST:
+      description: (BAD_REQUEST) No se ha logrado acceder a los detalles del anime.
       content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnimeNotFound'
-    SECOND_NOT_FOUND:
-      description: (NOT_FOUND) No se ha logrado acceder a los detalles del capitulo
+                $ref: '#/components/schemas/AnimeError'
+    GetAnimeDescription_NOT_FOUND:
+      description: (NOT_FOUND) El anime ingresado no existe.
       content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnimeNotFound'
-  
+                $ref: '#/components/schemas/AnimeError'
+    GetLatestEpisodes_BAD_REQUEST:
+      description: (BAD_REQUEST) No se ha logrado acceder al catalogo de capitulos.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
+    GetLatestEpisodes_NOT_FOUND:
+      description: (NOT_FOUND) Los capitulos no se han encontrado.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
+    GetEpisodeData_BAD_REQUEST:
+      description: (NOT_FOUND) No se ha logrado acceder a los detalles del capitulo.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
+    GetEpisodeData_NOT_FOUND:
+      description: (NOT_FOUND) El capitulo ingresado no existe.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
+  parameters:
+    AnimeEpisodeWithDescription:
+      name: AnimeEpisode
+      in: query
+      required: true
+      schema:
+        type: object
+        properties:
+          urlAnimeDescription:
+            type: string
+            example: "https://www3.animeflv.net/anime/one-piece-tv"
+        required:
+          - urlAnimeDescription
+
+    AnimeEpisodeWithTitleAndUrl:
+      name: AnimeEpisode
+      in: query
+      required: true
+      schema:
+        type: object
+        properties:
+          title:
+            type: string
+            example: "One Piece"
+          urlPaginaCapitulo:
+            type: string
+            example: "https://www3.animeflv.net/ver/one-piece-tv-1"
+        required:
+          - title
+          - urlPaginaCapitulo
   schemas:
-    FirstAnimeEpisodesGet:
+    GetLatestEpisodes:
         type: object
         properties:
           title:
             type: string
             description: Título del anime.
+            example: "One Piece"
+          cap:
+              type: string
+              description: Episodio del anime.
+              example: Episodio 1
           thumbnail:
             type: string
             description: URL de la imagen predefinida de la temporada del anime.
+            example: "https://cdn.animeflv.net/screenshots/7/1122/th_3.jpg"
           urlPaginaCapitulo:
             type: string
             description: URL de la dirección del capítulo para la obtención de los distintos servicios de streaming.
-    SecondAnimeEpisodesGet:
+            example: "https://www3.animeflv.net/ver/one-piece-tv-1"
+          urlAnimeDescrtiption:
+            type: string
+            description: URL de los detalles del anime.
+            example: "https://www3.animeflv.net/anime/one-piece-tv"
+          nextEpisode:
+            type: string
+            description: URL de la direccion del capitulo siguiente.
+            example: "https://www3.animeflv.net/ver/one-piece-tv-2"
+          lastEpisode:
+            type: string
+            description: URL de la direccion del capitulo anterior.
+            example: null
+    GetEpisodeData:
       type: object
       properties:
         episode:
@@ -89,12 +181,15 @@ components:
             title:
               type: string
               description: Título del anime.
+              example: "One Piece"
             thumbnail:
               type: string
               description: URL de la imagen predefinida de la temporada del anime.
+              example: "https://cdn.animeflv.net/screenshots/7/1122/th_3.jpg"
             urlPaginaCapitulo:
               type: string
               description: URL de la dirección del capítulo para la obtención de los distintos servicios de streaming.
+              example: "https://www3.animeflv.net/ver/one-piece-tv-1"
             options:
               type: object
               additionalProperties:
@@ -104,8 +199,41 @@ components:
         message:
           type: string
           description: Mensaje para comunicar que el proceso fue un exito.
-          
-    AnimeNotFound:
+          example: "Los capitulos no se han encontrado."
+    GetAnimeDescription:
+      type: object
+      properties:
+        anime:
+          type: object
+          properties:
+            title:
+              type: string
+              description:  Titulo del anime.
+              example: "One Piece"
+            synopsis:
+              type: string
+              description: resumen e introduccion del anime.
+              example: "Un joven pirata llamado Luffy busca convertirse en el Rey de los Piratas mientras explora los mares en busca del tesoro legendario, el One Piece."
+            episodes:
+              type: array
+              items:
+                $ref: '#/components/schemas/GetLatestEpisodes'
+            thumbnail:
+              type: string
+              description: URL de la imagen predefinida del anime.
+              example: "https://cdn.animeflv.net/screenshots/7/1122/th_3.jpg"
+            state:
+              type: boolean
+              description: Estado de emision del anime (true = Finalizado / false = En emision).
+            rate:
+              type: number
+              description: Valorizacion del anime.
+              example: 4.0
+        message:
+          type: string
+          description: Mensaje para comunicar que el proceso fue un exito.
+          example: "Es posible acceder a los detalles del anime con exito."
+    AnimeError:
       type: object
       properties:
         message:

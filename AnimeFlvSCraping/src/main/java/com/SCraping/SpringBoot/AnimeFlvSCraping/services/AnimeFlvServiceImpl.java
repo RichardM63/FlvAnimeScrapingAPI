@@ -32,7 +32,7 @@ public class AnimeFlvServiceImpl implements IAnimeFlvService{
         return respository.getLatestEpisodes();
     }
 
-    public AnimeEpisode getEpisodeData(String title){
-        return respository.getEpisodeData(title);
+    public AnimeEpisode getEpisodeData(AnimeEpisode animeEpisode){
+        return respository.getEpisodeData(animeEpisode);
     }
 }

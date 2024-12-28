@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-public class AnimeFlvRespositoryImpl implements IAnimeFlvRepository{
+public class AnimeFlvRespositoryImpl implements IAnimeFlvRepository {
 
     private static final String BASE_URL = "https://www3.animeflv.net";
     private static List<AnimeEpisode> episodes;
@@ -36,10 +36,11 @@ public class AnimeFlvRespositoryImpl implements IAnimeFlvRepository{
 
         for (Element element : elements) {
             String title = element.select(".Title").text();
+            String cap = element.select(".Capi").text();
             String episodeUrl = BASE_URL + element.select("a").attr("href");
-            String thumbnail = element.select("img").attr("src");
+            String thumbnail = BASE_URL + element.select("img").attr("src");
 
-            episodes.add(new AnimeEpisode(title,thumbnail,episodeUrl));
+            episodes.add(new AnimeEpisode(title, cap, thumbnail, episodeUrl));
         }
     }
 
@@ -49,41 +50,59 @@ public class AnimeFlvRespositoryImpl implements IAnimeFlvRepository{
     }
 
     @Override
-    public AnimeEpisode getEpisodeData(String title) {
-        System.setProperty("webdriver.chrome.driver", "/home/ubuntu/drivers/chromedriver");
+    public AnimeEpisode getEpisodeData(AnimeEpisode animeEpisode) {
+//        System.setProperty("webdriver.chrome.driver", "/home/ubuntu/drivers/chromedriver");
+
+        System.setProperty("webdriver.chrome.driver", "drivers/chromedriver.exe");
 
         ChromeOptions optionsChrome = new ChromeOptions();
-        optionsChrome.addArguments("--headless"); // Modo headless
+        optionsChrome.addArguments("--headless");
         optionsChrome.addArguments("--no-sandbox");
         optionsChrome.addArguments("--disable-dev-shm-usage");
         optionsChrome.addArguments("--remote-debugging-port=9222");
 
         WebDriver driver = new ChromeDriver(optionsChrome);
+        String urlPageAnime = animeEpisode.getUrlPaginaCapitulo();
+
+        System.out.println(urlPageAnime);
         try {
-        episodes.stream().filter(animeEpisode -> animeEpisode.getTitle().equals(title)).peek(animeEpisode -> {
-            driver.get(animeEpisode.getUrlPaginaCapitulo());
-        }).findAny();
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        List<WebElement> optionElements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("ul.CapiTnv li")));
+            driver.get(urlPageAnime);
 
-        Map<String,String> options = new HashMap<>();
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            List<WebElement> optionElements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("ul.CapiTnv li")));
 
-        for (WebElement option : optionElements) {
-            String optionTitle = option.getAttribute("title");
-            if(!optionTitle.equals("Netu")) {
-                option.click();
-                WebElement iframe = wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("iframe")));
-                if (optionTitle != null && !optionTitle.isEmpty()) {
-                    options.put(optionTitle, iframe.getAttribute("src"));
-                } else {
-                    System.out.println("Opcion invalid");
+            List<WebElement> links = driver.findElements(By.cssSelector(".CapNv a"));
+            List<String> hrefs = new ArrayList<>();
+            String urlAnimeDescrtiption="";
+            String nextEpisode="";
+            String lastEpisode="";
+            for (WebElement link : links) {
+                lastEpisode = link.getText().equals("ANTERIOR") ? link.getAttribute("href"):lastEpisode;
+                urlAnimeDescrtiption = link.getText().equals("") ? link.getAttribute("href"):urlAnimeDescrtiption;
+                nextEpisode = link.getText().equals("SIGUIENTE") ? link.getAttribute("href"):nextEpisode;
+            }
+
+            Map<String, String> options = new HashMap<>();
+
+            for (WebElement option : optionElements) {
+                String optionTitle = option.getAttribute("title");
+                if (!optionTitle.equals("Netu")) {
+                    option.click();
+                    WebElement iframe = wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("iframe")));
+                    if (optionTitle != null && !optionTitle.isEmpty()) {
+                        options.put(optionTitle, iframe.getAttribute("src"));
+                    } else {
+                        System.out.println("Opcion invalid");
+                    }
                 }
             }
-        }
-            return episodes.stream().filter(animeEpisode -> animeEpisode.getTitle().equals(title))
-                    .peek(episode->episode.setOptions(options))
-                    .findAny().orElseThrow();
+            animeEpisode.setCap(driver.findElement(By.cssSelector(".CapiTop h2")).getText());
+            animeEpisode.setOptions(options);
+            animeEpisode.setNextEpisode(nextEpisode);
+            animeEpisode.setUrlAnimeDescrtiption(urlAnimeDescrtiption);
+            animeEpisode.setLastEpisode(lastEpisode);
+            return animeEpisode;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
