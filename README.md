@@ -4,3 +4,5 @@ Esta API se encarga de manejar los datos de los últimos capítulos de animes la
 -En el apartado repositories.AnimeFlvRespositoryImpl el metodo getLatestEpisodes() y de la misma forma en repositories.AnimeRespositoryImpl el metodo getAnimebyTitle(AnimeEpisode episode), en System.setProperty("webdriver.chrome.driver", "/home/ubuntu/drivers/chromedriver");
 ("/home/ubuntu/drivers/chromedriver"), esta referenciado para que pueda usarse en un entorno remoto de linux, tienes que modificar esta ruta a una de acorde a tu entorno.
 En caso de windows usar "drivers/chromedriver.exe" y sistema linux "drivers/chromedriver".
+
+-Para poder observar la documentacion de la API, obten el codigo del archivo endpointDocs.ymal y colocalo en el siguiente link "https://editor.swagger.io/" para obtener una interfaz amigable de la descripcion del Proyecto.
