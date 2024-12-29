@@ -27,6 +27,54 @@ paths:
           $ref: '#/components/responses/GetAnimeDescription_BAD_REQUEST'
         404:
           $ref: '#/components/responses/GetAnimeDescription_NOT_FOUND'
+  /{title}:
+    get:
+      tags:
+        - anime
+      summary: Realiza una busqueda del titulo que haz colocado y te extrae los Animes de caracteristicas coorcondantes.
+      parameters:
+        - $ref: '#/components/parameters/TitlePathParam'
+      responses:
+        200:
+          description: (OK) Es posible acceder al siguiente contenido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  animes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          description: Titulo del anime.
+                          example: "One Piece"
+                        synopsis:
+                          type: string
+                          description: Resumen e introducción del anime.
+                          example: "Un joven pirata llamado Luffy busca convertirse en el Rey de los Piratas mientras explora los mares en busca del tesoro legendario, el One Piece."
+                        urlAnimeDescription:
+                          type: string
+                          description: URL de los detalles del anime.
+                          example: "https://www3.animeflv.net/anime/one-piece-tv"
+                        thumbnail:
+                          type: string
+                          description: URL de la imagen predefinida del anime.
+                          example: "https://cdn.animeflv.net/screenshots/7/1122/th_3.jpg"
+                        rate:
+                          type: number
+                          description: Valorización del anime.
+                          example: 4.0
+                  message:
+                    type: string
+                    description: Mensaje para comunicar que el proceso fue un éxito.
+                    example: "Es posible acceder a los detalles del anime con éxito."
+        400:
+          $ref: '#/components/responses/searchByTitle_BAD_REQUEST'
+        404:
+          $ref: '#/components/responses/searchByTitle_NOT_FOUND'
   /latest:
     get:
       tags:
@@ -92,6 +140,18 @@ components:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnimeError'
+    searchByTitle_NOT_FOUND:
+      description: (NOT_FOUND) No se han encontrado contenido con el nombre proporcionado.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
+    searchByTitle_BAD_REQUEST:
+      description: (BAD_REQUEST) No se ha logrado acceder al catalogo de capitulos.
+      content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimeError'
     GetLatestEpisodes_NOT_FOUND:
       description: (NOT_FOUND) Los capitulos no se han encontrado.
       content:
@@ -111,6 +171,13 @@ components:
               schema:
                 $ref: '#/components/schemas/AnimeError'
   parameters:
+    TitlePathParam:
+      name: title
+      in: path
+      required: true
+      description: El título del anime o episodio
+      schema:
+        type: string
     AnimeEpisodeWithDescription:
       name: AnimeEpisode
       in: query
@@ -214,6 +281,10 @@ components:
               type: string
               description: resumen e introduccion del anime.
               example: "Un joven pirata llamado Luffy busca convertirse en el Rey de los Piratas mientras explora los mares en busca del tesoro legendario, el One Piece."
+            urlAnimeDescrtiption:
+              type: string
+              description: URL de los detalles del anime.
+              example: "https://www3.animeflv.net/anime/one-piece-tv"
             episodes:
               type: array
               items:

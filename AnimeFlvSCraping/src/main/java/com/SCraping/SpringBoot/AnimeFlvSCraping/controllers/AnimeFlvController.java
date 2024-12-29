@@ -29,7 +29,7 @@ public class AnimeFlvController {
     public ResponseEntity<?> getanimeDescription(@RequestBody AnimeEpisode episode) throws IOException {
         Map<String, Object> response = new HashMap<>();
         try {
-            Anime anime = animeService.getAnimebyTitle(episode);
+            Anime anime = animeService.getAnimebyUrl(episode);
             if(anime==null){
                 response.put("mensaje","El anime ingresado no existe.");
                 response.put("error",new Exception().getMessage());
@@ -39,6 +39,28 @@ public class AnimeFlvController {
             response.put("Anime",anime);
         }catch (Exception e){
             response.put("mensaje","No se ha logrado acceder a los detalles del anime.");
+            response.put("error",e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+
+    }
+
+    @GetMapping("/browse/{title}")
+    public ResponseEntity<?> searchByTitle(@PathVariable String title) throws IOException {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<Anime> animes = animeService.searchByTitle(title);
+            if(animes==null){
+                response.put("mensaje","No se han encontrado contenido con el nombre proporcionado.");
+                response.put("error",new Exception().getMessage());
+                return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+            }
+            response.put("mensaje","Es posible acceder al siguiente contenido.");
+            response.put("Anime",animes);
+        }catch (Exception e){
+            response.put("mensaje","No se ha logrado acceder a la busqueda.");
             response.put("error",e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
@@ -64,6 +86,8 @@ public class AnimeFlvController {
             response.put("error",e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+
+        animeService.searchByTitle("k");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

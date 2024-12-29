@@ -51,9 +51,9 @@ public class AnimeFlvRespositoryImpl implements IAnimeFlvRepository {
 
     @Override
     public AnimeEpisode getEpisodeData(AnimeEpisode animeEpisode) {
-//        System.setProperty("webdriver.chrome.driver", "/home/ubuntu/drivers/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "/home/ubuntu/drivers/chromedriver");
 
-        System.setProperty("webdriver.chrome.driver", "drivers/chromedriver.exe");
+//        System.setProperty("webdriver.chrome.driver", "drivers/chromedriver.exe");
 
         ChromeOptions optionsChrome = new ChromeOptions();
         optionsChrome.addArguments("--headless");
